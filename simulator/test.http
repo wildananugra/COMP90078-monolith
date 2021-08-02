@@ -1,0 +1,14 @@
+###
+POST http://localhost:8090/sim/merchant-1
+Action: PAYMENT
+
+### 
+GET http://localhost:8080/payment/7877789584
+
+### 
+POST http://localhost:8080/payment/7877789584
+Content-Type: application/json
+
+{
+    "account" : "0115471119"
+}
