@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+    bankapp:
+        build:
+            context: ./bankapp
+            dockerfile: ./bankapp.Dockerfile
+        container_name: bankapp
+        ports:
+            - "8080:8080"
+        depends_on:
+            - appdb
+        environment: 
+            DB_CONNECTION: postgresql://comp90078:comp90078!@appdb/comp90078-db
+            SIMULATOR_HOST: http://simulator:8090/sim
+    simulator:
+        build:
+            context: ./simulator
+            dockerfile: ./simulator.Dockerfile
+        container_name: simulator
+        ports:
+            - "8090:8090"
+    appdb:
+        image: postgres
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: comp90078!
+            POSTGRES_USER: comp90078
+            POSTGRES_DB: comp90078-db
+        volumes:
+            - ./data:/var/lib/postgresql/data
