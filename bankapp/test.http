@@ -1,0 +1,34 @@
+GET http://localhost:8080/payment/4958964369
+Action: INQUIRY
+Content-Type: application/json
+
+{
+    "billing" : "081316006010"
+}
+
+### 
+POST http://localhost:8080/payment/4958964369
+Content-Type: application/json
+
+{
+    "account" : "1154711190",
+    "amount": 100
+}
+
+###
+GET http://localhost:8080/purchase/4958964369
+Action: INQUIRY
+Content-Type: application/json
+
+{
+    "billing" : "081316006010"
+}
+
+### 
+POST http://localhost:8080/purchase/4958964369
+Content-Type: application/json
+
+{
+    "account" : "1154711190",
+    "amount": 100
+}

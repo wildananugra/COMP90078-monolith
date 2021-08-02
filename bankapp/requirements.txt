@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+pydantic[email]
+sqlalchemy
+psycopg2-binary
+requests
