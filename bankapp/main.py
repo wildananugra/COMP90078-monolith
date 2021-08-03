@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import Depends, FastAPI, Body, Request
+from fastapi import Depends, FastAPI, Body, Request,HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
@@ -13,6 +13,8 @@ from schemas.customer_service import *
 from schemas.channel_user import *
 from services import customer, account, transactions, merchant, payment, purchase, customer_service, channel_user
 from models.customer import CustomerModel, Base
+
+import base64
 
 Base.metadata.create_all(bind=engine)
 
@@ -28,21 +30,22 @@ def get_db():
     finally:
         db.close()
 
-tokens = ["wildan","raika"]
+tokens = ["admin"]
 async def validate_token(token: str = Depends(oauth2_scheme)):
-    if token not in tokens:
+    print(base64.b64decode(token.encode('ascii')))
+    if base64.b64decode(token.encode('ascii')).decode('ascii') not in tokens:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return token
+    return base64.b64decode(token.encode('ascii')).decode('ascii')
 
 # token
 @app.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    if form_data.username == "wildan" and form_data.password == "password":
-        return {"access_token": form_data.username, "token_type": "bearer"}
+    if form_data.username == "admin" and form_data.password == "password":
+        return {"access_token": base64.b64encode(form_data.username.encode('ascii')), "token_type": "bearer"}
     else:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
@@ -60,7 +63,7 @@ def create_customers(
         }
     ),
     db: Session = Depends(get_db),
-    # token: str = Depends(validate_token)
+    token: str = Depends(validate_token)
 ):
     return customer.create(db, customer_req)
 
@@ -70,7 +73,8 @@ def create_customers(
 )
 def list_customers(
     skip: int = 0, limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer.all(db, skip, limit)
 
@@ -80,7 +84,8 @@ def list_customers(
 )
 def detail_customers(
     id_number: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer.detail(db, id_number)
 
@@ -97,7 +102,8 @@ def update_customers(
             "email": "customer@server.com"
         }
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer.update(db, customer_req, cif_number)
 
@@ -107,7 +113,8 @@ def update_customers(
 )
 def delete_customers(
     cif_number: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer.delete(db, cif_number)
 
@@ -124,7 +131,8 @@ def create_accounts(
             "account_number": "115471119"
         }
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return account.create(db, account_req)
 
@@ -134,7 +142,8 @@ def create_accounts(
 )
 def list_accounts(
     cif_number: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return account.all(db, cif_number)
 
@@ -144,7 +153,8 @@ def list_accounts(
 )
 def detail_account(
     account_number: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return account.detail(db, account_number)
 
@@ -154,7 +164,8 @@ def detail_account(
 )
 def delete_accounts(
     account_number: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return account.delete(db, account_number)
 
@@ -165,7 +176,8 @@ def delete_accounts(
 )
 def list_merchants(
     cif_number: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return merchant.all(db, cif_number)
 
@@ -175,7 +187,8 @@ def list_merchants(
 )
 def detail_merchant(
     merchant_code: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return merchant.detail(db, merchant_code)
 
@@ -193,7 +206,8 @@ def create_merchant(
             "account_number": "115471119"
         }
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return merchant.create(db, merchant_req)
 
@@ -211,7 +225,8 @@ def update_merchant(
             "account_number": "115471119"
         }
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return merchant.update(db, merchant_req, merchant_id)
 
@@ -221,7 +236,8 @@ def update_merchant(
 )
 def delete_merchant(
     merchant_code: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return merchant.delete(db, merchant_code)
 
@@ -232,7 +248,8 @@ def delete_merchant(
 )
 def deposit_trx(
     deposit: DepositSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return transactions.deposit(db, deposit)
 
@@ -242,7 +259,8 @@ def deposit_trx(
 )
 def withdrawal(
     withdrawal: WithdrawalSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return transactions.withdrawal(db, withdrawal)
 
@@ -252,7 +270,8 @@ def withdrawal(
 )
 def transfer(
     transfer: TransferSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return transactions.transfer(db, transfer)
 
@@ -263,7 +282,8 @@ def transfer(
 def historical_transaction(
     account_number: str,
     skip: int = 0, limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return transactions.history(db, account_number, skip, limit)
 
@@ -274,7 +294,8 @@ def historical_transaction(
 )
 async def payment_inquiry(
     request: Request, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return await payment.inq(db, request)
 
@@ -284,7 +305,8 @@ async def payment_inquiry(
 )
 async def payment_pay(
     request: Request, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return await payment.pay(db, request)
 
@@ -294,7 +316,8 @@ async def payment_pay(
 )
 async def purchased_inquiry(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return await purchase.inq(db, request)
 
@@ -304,7 +327,8 @@ async def purchased_inquiry(
 )
 async def purchased_pay(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return await purchase.pay(db, request)
 
@@ -315,7 +339,8 @@ async def purchased_pay(
 )
 async def list_customer_services(
     skip: int = 0, limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer_service.all(db, skip, limit)
 
@@ -325,7 +350,8 @@ async def list_customer_services(
 )
 async def detail_customer_services(
     user_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer_service.detail(db, user_id)
 
@@ -335,7 +361,8 @@ async def detail_customer_services(
 )
 async def create_customer_services(
     customer_service_req: CustomerServiceSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer_service.create(db, customer_service_req)
 
@@ -345,7 +372,8 @@ async def create_customer_services(
 )
 async def login_customer_services(
     customer_service_req: CustomerServiceLoginSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer_service.login(db, customer_service_req)
 
@@ -356,7 +384,8 @@ async def login_customer_services(
 async def update_customer_services(
     customer_service_req: CustomerServiceUpdateSchema,
     user_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer_service.update(db, customer_service_req, user_id)
 
@@ -367,7 +396,8 @@ async def update_customer_services(
 async def update_password_customer_services(
     customer_service_req: CustomerServiceUpdatePasswordSchema,
     user_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer_service.update_password(db, customer_service_req, user_id)
 
@@ -377,7 +407,8 @@ async def update_password_customer_services(
 )
 async def delete_customer_services(
     user_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return customer_service.delete(db, user_id)
 
@@ -388,7 +419,8 @@ async def delete_customer_services(
 )
 async def list_ibank_user(
     skip: int = 0, limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.all(db, "IBANK", skip, limit)
 
@@ -398,7 +430,8 @@ async def list_ibank_user(
 )
 async def detail_ibank_user(
     user_id: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.detail(db, user_id, "IBANK")
 
@@ -408,7 +441,8 @@ async def detail_ibank_user(
 )
 async def create_ibank_user(
     channel_user_req: ChannelUserSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.create(db, channel_user_req, "IBANK")
 
@@ -418,7 +452,8 @@ async def create_ibank_user(
 )
 async def login_ibank_user(
     channel_user_req: ChannelUserLoginSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.login(db, channel_user_req, "IBANK")
 
@@ -429,7 +464,8 @@ async def login_ibank_user(
 async def update_ibank_user(
     channel_user_req: ChannelUserUpdateSchema,
     user_id: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.update(db, channel_user_req, user_id, "IBANK")
 
@@ -440,7 +476,8 @@ async def update_ibank_user(
 async def update_password_ibank_user(
     channel_user_req: ChannelUserUpdatePasswordSchema,
     user_id: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.update_password(db, channel_user_req, user_id, "IBANK")
 
@@ -450,7 +487,8 @@ async def update_password_ibank_user(
 )
 async def delete_customer_services(
     user_id: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.delete(db, user_id, "IBANK")
 
@@ -461,7 +499,8 @@ async def delete_customer_services(
 )
 async def list_mbank_user(
     skip: int = 0, limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.all(db, "MBANK", skip, limit)
 
@@ -471,7 +510,8 @@ async def list_mbank_user(
 )
 async def detail_mbank_user(
     user_id: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.detail(db, user_id, "MBANK")
 
@@ -481,7 +521,8 @@ async def detail_mbank_user(
 )
 async def create_mbank_user(
     channel_user_req: ChannelUserSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.create(db, channel_user_req, "MBANK")
 
@@ -491,7 +532,8 @@ async def create_mbank_user(
 )
 async def login_mbank_user(
     channel_user_req: ChannelUserLoginSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.login(db, channel_user_req, "MBANK")
 
@@ -502,7 +544,8 @@ async def login_mbank_user(
 async def update_mbank_user(
     channel_user_req: ChannelUserUpdateSchema,
     user_id: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.update(db, channel_user_req, user_id, "MBANK")
 
@@ -513,7 +556,8 @@ async def update_mbank_user(
 async def update_password_mbank_user(
     channel_user_req: ChannelUserUpdatePasswordSchema,
     user_id: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.update_password(db, channel_user_req, user_id, "MBANK")
 
@@ -523,6 +567,7 @@ async def update_password_mbank_user(
 )
 async def delete_customer_services(
     user_id: str, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
 ):
     return channel_user.delete(db, user_id, "MBANK")
