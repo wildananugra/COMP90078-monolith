@@ -4,9 +4,6 @@ from models.customer_service import CustomerServiceModel
 from fastapi import HTTPException
 
 # utils
-def generate_user_id(size=6):
-    return ''.join(random.choice(string.digits) for _ in range(size))
-
 def select_by_user_id(db: Session, user_id: str):
     return db.query(CustomerServiceModel).filter(CustomerServiceModel.user_id == user_id).first()
 

@@ -7,8 +7,12 @@ import random
 import string
 
 # utils
-def generate_cif_number(size=10):
-    return ''.join(random.choice(string.digits) for _ in range(size))
+def generate_cif_number(db: Session, size=10):
+    cif_number = ''.join(random.choice(string.digits) for _ in range(size))
+    db_cif_number = select_by_cif(db, cif_number)
+    if db_cif_number:
+        generate_cif_number(db)
+    return cif_number
 
 def select_by_cif(db: Session, cif_number):
     return db.query(CustomerModel).filter(CustomerModel.cif_number == cif_number).first()
@@ -21,7 +25,7 @@ def create(db: Session, user: CustomerSchema):
     
     user_dict = user.dict()    
     
-    user_dict['cif_number'] = generate_cif_number()
+    user_dict['cif_number'] = generate_cif_number(db)
     while select_by_cif(db, user_dict['cif_number']):
         user_dict['cif_number'] = cif_number()
 

@@ -49,7 +49,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 # Customers
 @app.post(
     "/customer/", 
-    response_model=CustomerCreateSchema,
     tags=["Customers"],
 )
 def create_customers(
@@ -67,7 +66,6 @@ def create_customers(
 
 @app.get(
     "/customers/",
-    response_model=CustomerResponseListScheme,
     tags=["Customers"]
 )
 def list_customers(
@@ -78,7 +76,6 @@ def list_customers(
 
 @app.get(
     "/customer/{id_number}",
-    response_model=CustomerCreateSchema,
     tags=["Customers"]
 )
 def detail_customers(
@@ -88,7 +85,7 @@ def detail_customers(
     return customer.detail(db, id_number)
 
 @app.put(
-    "/customer/",
+    "/customer/{cif_number}",
     tags=["Customers"]
 )
 def update_customers(
@@ -118,7 +115,6 @@ def delete_customers(
 @app.post(
     "/account/",
     tags=["Accounts"],
-    response_model=AccountSchema,
 )
 def create_accounts(
     account_req: AccountSchema = Body(
@@ -135,7 +131,6 @@ def create_accounts(
 @app.get(
     "/accounts/{cif_number}",
     tags=["Accounts"],
-    response_model=AccountListSchema
 )
 def list_accounts(
     cif_number: str, 
@@ -146,7 +141,6 @@ def list_accounts(
 @app.get(
     "/account/{account_number}",
     tags=["Accounts"],
-    response_model=AccountSchema
 )
 def detail_account(
     account_number: str, 
@@ -168,7 +162,6 @@ def delete_accounts(
 @app.get(
     "/merchants/{cif_number}",
     tags=["Merchants"],
-    response_model=MerchantAccountListSchema
 )
 def list_merchants(
     cif_number: str,

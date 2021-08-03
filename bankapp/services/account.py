@@ -1,18 +1,29 @@
 from schemas.account import *
 from sqlalchemy.orm import Session
 from models.account import AccountModel
-from services import customer
+from models.customer import CustomerModel
 from fastapi import HTTPException
 
 import random
 import string
 
 # utils
-def generate_account_number(size=10):
-    return ''.join(random.choice(string.digits) for _ in range(size))
+def generate_account_number(db: Session, size=10):
+    account_number = ''.join(random.choice(string.digits) for _ in range(size))
 
-def select_by_account_number(db, account_number):
+    if select_by_account_number(db, account_number):
+        return generate_account_number(db)
+    else:
+        return account_number
+
+def select_by_account_number(db: Session, account_number: str):
     return db.query(AccountModel).filter(AccountModel.account_number == account_number).first()
+
+def select_customer_by_id_number(db: Session, id_number: str):
+    return db.query(CustomerModel).filter(CustomerModel.id_number == id_number).first()
+
+def select_customer_by_cif(db: Session, cif_number: str):
+    return db.query(CustomerModel).filter(CustomerModel.cif_number == cif_number).first()
 
 def insert_to_db(db: Session(), account):
     db_account = AccountModel(
@@ -29,7 +40,7 @@ def insert_to_db(db: Session(), account):
 # services
 def create(db: Session, account: AccountSchema):
     
-    db_cust = customer.select_by_id_number(db, account.id_number)
+    db_cust = select_customer_by_id_number(db, account.id_number)
 
     if db_cust:
         account_dict = account.dict()
@@ -40,6 +51,10 @@ def create(db: Session, account: AccountSchema):
         raise HTTPException(status_code=400, detail="ID Number doesn't exist")
 
     if account.account_number:
+
+        if len(account.account_number) != 10:
+            raise HTTPException(status_code=400, detail="Account Number len should be 10")
+
         account_exist = select_by_account_number(db, account_number=account.account_number)
         if account_exist:
             raise HTTPException(status_code=400, detail="Account number exists")
@@ -47,12 +62,12 @@ def create(db: Session, account: AccountSchema):
             account_dict['account_number'] = account.account_number
             return insert_to_db(db, account_dict)
     else:
-        account_number = generate_account_number()
+        account_number = generate_account_number(db)
         account_dict['account_number'] = account_number
         return insert_to_db(db, account_dict)
 
 def all(db: Session, cif_number: str):
-    db_cust = customer.select_by_cif(db, cif_number)
+    db_cust = select_customer_by_cif(db, cif_number)
     if db_cust:
         return {"data" : db.query(AccountModel).filter(AccountModel.cif_number == cif_number).all()}
     else:
@@ -66,15 +81,8 @@ def delete(db: Session, account_number: str):
     return account
 
 def detail(db: Session, account_number: str):
-    print(account_number)
-    account = select_by_account_number(db, account_number)
-    if account:
-        return AccountSchema(
-            id_number=account.id_number,
-            account_number=account.account_number,
-            cif_number=account.cif_number,
-            balance=account.balance,
-            currency=account.currency
-        ).dict()
+    db_account = select_by_account_number(db, account_number)
+    if db_account:
+        return { "data" : db_account, "customer_info" : db_account.customers }
     else:
         raise HTTPException(status_code=400, detail="Account Number doesn't exist")

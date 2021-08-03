@@ -6,8 +6,6 @@ from models.customer import CustomerModel
 from fastapi import HTTPException
 
 # utils
-def generate_user_id(size=6):
-    return ''.join(random.choice(string.digits) for _ in range(size))
 
 def select_by_user_id(db: Session, user_id: str, channel_type: str):
     return db.query(ChannelUserModel).filter(and_(ChannelUserModel.user_id == user_id, ChannelUserModel.channel_type == channel_type)).first()
@@ -46,7 +44,7 @@ def all(db:Session, channel_type: str, skip: int = 0, limit: int = 100):
 def detail(db: Session, user_id: str, channel_type: str):
     db_channel_user = select_by_user_id(db, user_id, channel_type)
     if db_channel_user: 
-        return db_channel_user
+        return { 'data' : db_channel_user, 'customer_info' : db_channel_user.customers, 'account_info' : db_channel_user.customers.accounts }
     else:
         raise HTTPException(status_code=400, detail="User ID doesnt exist") 
 

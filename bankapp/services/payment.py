@@ -1,21 +1,35 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from models.merchant import MerchantModel
 from models.history import HistoricalTransactionModel
 from models.h2h_lookup import H2HLookupModel
-from services import customer, merchant, account
 from fastapi import HTTPException, Request
 from config import Settings
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import requests
 import random, string
 
 # utils
-def generate_journal_number(size=6):
-    return ''.join(random.choice(string.digits) for _ in range(size))
+def generate_journal_number(db: Session, size=6):
+    journal_number = ''.join(random.choice(string.digits) for _ in range(size))
+    db_journal_number = db.query(HistoricalTransactionModel).filter(and_((HistoricalTransactionModel.timstamp + timedelta(days=1)) > datetime.now(), HistoricalTransactionModel.journal_number == journal_number)).first()
+    if db_journal_number:
+        generate_journal_number(db)
+    return journal_number
 
 def generate_customer_reference_id(size=10):
-    return ''.join(random.choice(string.digits) for _ in range(size))
+    customer_reference_id = ''.join(random.choice(string.digits) for _ in range(size))
+    db_customer_reference_id = db.query(H2HLookupModel).filter(H2HLookupModel.customer_reference_id == customer_reference_id).first()
+    if db_customer_reference_id:
+        generate_customer_reference_id(db)
+    return db_customer_reference_id
+
+def select_merchant_by_merchant_code(db: Session, merchant_code: str):
+    return db.query(MerchantModel).filter(MerchantModel.merchant_code == merchant_code).first()
+
+def select_account_by_account_number(db: Session, account_number: str):
+    return db.query(AccountModel).filter(AccountModel.account_number == account_number).first()
 
 # main 
 def merchant_one_inquiry(db: Session, request: Request):
@@ -27,7 +41,7 @@ def merchant_one_payment(db: Session, request: Request):
 # inquiry
 async def inq(db: Session, request: Request):
     merchant_code = request.path_params['merchant_code']
-    db_merchant = merchant.select_by_merchant_code(db, merchant_code)
+    db_merchant = select_merchant_by_merchant_code(db, merchant_code)
 
     response = {}
     if not db_merchant:
@@ -61,8 +75,8 @@ async def inq(db: Session, request: Request):
 # payment
 async def pay(db: Session, request: Request):
     merchant_code = request.path_params['merchant_code']
-    db_merchant = merchant.select_by_merchant_code(db, merchant_code)
-    journal_number = generate_journal_number()
+    db_merchant = select_merchant_by_merchant_code(db, merchant_code)
+    journal_number = generate_journal_number(db)
     customer_reference_id = generate_customer_reference_id()
 
     response = {}
@@ -73,12 +87,12 @@ async def pay(db: Session, request: Request):
         customer_account = request_body['account']
         
         # validate debit account
-        db_customer_account = account.select_by_account_number(db, customer_account)
+        db_customer_account = select_account_by_account_number(db, customer_account)
         if not db_customer_account:
             raise HTTPException(status_code=400, detail="Customer account doesnt exist") 
         
         # validate debit account
-        db_merchant_account = account.select_by_account_number(db, db_merchant.account_number)
+        db_merchant_account = select_account_by_account_number(db, db_merchant.account_number)
         if not db_merchant_account:
             raise HTTPException(status_code=400, detail="Merchant account doesnt exist") 
 

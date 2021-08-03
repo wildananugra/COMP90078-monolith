@@ -2,25 +2,33 @@ from schemas.deposit import *
 from schemas.withdrawal import *
 from schemas.transfer import *
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from models.history import HistoricalTransactionModel
 from fastapi import HTTPException
-from services import account
-from datetime import datetime
+from datetime import datetime, timedelta
+from models.account import AccountModel
 import random
 import string
 
 # TODO: there is no same journal number in a day. 
-def generate_journal_number(size=6):
-    return ''.join(random.choice(string.digits) for _ in range(size))
+def generate_journal_number(db: Session, size=6):
+    journal_number = ''.join(random.choice(string.digits) for _ in range(size))
+    db_journal_number = db.query(HistoricalTransactionModel).filter(and_((HistoricalTransactionModel.timestamp + timedelta(days=1)) > datetime.now(), HistoricalTransactionModel.journal_number == journal_number)).first()
+    if db_journal_number:
+        generate_journal_number(db)
+    return journal_number
+
+def select_account_by_account_number(db: Session, account_number: str):
+    return db.query(AccountModel).filter(AccountModel.account_number == account_number).first()
 
 def deposit(db: Session, deposit: DepositSchema):
 
     # set initial
-    journal_number = generate_journal_number()
+    journal_number = generate_journal_number(db)
     timestamp = datetime.utcnow()
 
     # check from account number
-    current_account_number = account.select_by_account_number(db, deposit.account_number)
+    current_account_number = select_account_by_account_number(db, deposit.account_number)
     if not current_account_number:
         raise HTTPException(status_code=400, detail="Acccount number doesn't exist")
 
@@ -52,11 +60,11 @@ def deposit(db: Session, deposit: DepositSchema):
 
 def withdrawal(db: Session, withdrawal: WithdrawalSchema):
     # set initial
-    journal_number = generate_journal_number()
+    journal_number = generate_journal_number(db)
     timestamp = datetime.utcnow()
 
     # check from account number
-    current_account_number = account.select_by_account_number(db, withdrawal.account_number)
+    current_account_number = select_account_by_account_number(db, withdrawal.account_number)
     if not current_account_number:
         raise HTTPException(status_code=400, detail="Acccount number doesn't exist")
 
@@ -97,16 +105,16 @@ def withdrawal(db: Session, withdrawal: WithdrawalSchema):
 
 def transfer(db: Session, transfer: TransferSchema):
     # set initial
-    journal_number = generate_journal_number()
+    journal_number = generate_journal_number(db)
     timestamp = datetime.utcnow()
 
     # check from from account number
-    from_current_account_number = account.select_by_account_number(db, transfer.from_account_number)
+    from_current_account_number = select_account_by_account_number(db, transfer.from_account_number)
     if not from_current_account_number:
         raise HTTPException(status_code=400, detail="From Acccount number doesn't exist")
 
     # check from from account number
-    to_current_account_number = account.select_by_account_number(db, transfer.to_account_number)
+    to_current_account_number = select_account_by_account_number(db, transfer.to_account_number)
     if not to_current_account_number:
         raise HTTPException(status_code=400, detail="To Acccount number doesn't exist")
 
