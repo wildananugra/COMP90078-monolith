@@ -1,6 +1,6 @@
 ###
 POST http://localhost:8090/sim/merchant-1
-Action: PAYMENT
+Action: INQUIRY
 
 ### 
 GET http://localhost:8080/payment/7877789584

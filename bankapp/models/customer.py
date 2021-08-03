@@ -10,10 +10,10 @@ class CustomerModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     id_number = Column(String, unique=True, index=True)
     cif_number = Column(String, unique=True, index=True)
-    customer_id = Column(String, index=True)
     name = Column(String)
     email = Column(String)
     is_active = Column(Boolean, default=True)
 
     accounts = relationship("AccountModel", back_populates="customers")
     merchants = relationship("MerchantModel", back_populates="customers")
+    channel_users = relationship("ChannelUserModel", back_populates="customers")

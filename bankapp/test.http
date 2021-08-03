@@ -32,3 +32,19 @@ Content-Type: application/json
     "account" : "1154711190",
     "amount": 100
 }
+
+### 
+POST http://localhost:8080/token/
+Content-Type: application/x-www-form-urlencoded
+
+username=wildan&password=password
+
+### 
+POST http://localhost:8080/customer/
+Authorization: Bearer wildan
+Content-Type: application/json
+
+{
+  "name": "Customer name",
+  "id_number": "3175023005910001"
+}

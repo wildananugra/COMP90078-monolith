@@ -3,7 +3,9 @@ from models.merchant import MerchantModel
 from models.history import HistoricalTransactionModel
 from services import customer, merchant, account
 from fastapi import HTTPException, Request
+from models.h2h_lookup import H2HLookupModel
 from config import Settings
+from datetime import datetime
 import json
 import requests
 import random, string
@@ -12,12 +14,15 @@ import random, string
 def generate_journal_number(size=6):
     return ''.join(random.choice(string.digits) for _ in range(size))
 
+def generate_customer_reference_id(size=10):
+    return ''.join(random.choice(string.digits) for _ in range(size))
+
 # main 
 def merchant_one_inquiry(db: Session, request: Request):
-    return requests.post(f"{Settings().simulator_host}/merchant-1", json={}, headers={ 'Action' : 'INQUIRY' }).json()
+    return requests.post(f"{Settings().simulator_host}/merchant-1", json={}, headers={ 'Action' : 'INQUIRY' })
 
 def merchant_one_payment(db: Session, request: Request):
-    return requests.post(f"{Settings().simulator_host}/merchant-1", json={}, headers={ 'Action' : 'PAYMENT' }).json()
+    return requests.post(f"{Settings().simulator_host}/merchant-1", json={}, headers={ 'Action' : 'PAYMENT' })
 
 # inquiry
 async def inq(db: Session, request: Request):
@@ -31,16 +36,34 @@ async def inq(db: Session, request: Request):
         request_body = await request.json()
         if merchant_code == "4958964369":
             response = merchant_one_inquiry(db, request)
-        else:
-            response = { "message" : "invalid merchant code." }
 
-    return response
+            status_code = response.status_code
+            response_text = json.dumps(response.json())
+            request_text = json.dumps(request_body)
+
+            db.add(H2HLookupModel(
+                customer_reference_id=generate_customer_reference_id(),
+                merchant_code=merchant_code,
+                action="INQUIRY",
+                status=status_code,
+                request_raw=request_text,
+                response_raw=response_text,
+                transaction_type="PURCHASE"
+            ))
+
+            db.commit()
+
+        else:
+            return { "message" : "invalid merchant code." }
+
+    return response.json()
 
 # payment
 async def pay(db: Session, request: Request):
     merchant_code = request.path_params['merchant_code']
     db_merchant = merchant.select_by_merchant_code(db, merchant_code)
     journal_number = generate_journal_number()
+    customer_reference_id = generate_customer_reference_id()
 
     response = {}
     if not db_merchant:
@@ -89,11 +112,34 @@ async def pay(db: Session, request: Request):
         # update balance merchant account
         setattr(db_customer_account, 'balance', db_customer_account.balance - int(request_body['amount']))
 
-        db.commit()
-
         if merchant_code == "4958964369":
             response = merchant_one_payment(db, request)
-        else:
-            response = { "message" : "invalid merchant code." }
 
-    return response
+            status_code = response.status_code
+            response_text = json.dumps(response.json())
+            request_text = json.dumps(request_body)
+
+            db.add(H2HLookupModel(
+                customer_reference_id=customer_reference_id,
+                merchant_code=merchant_code,
+                action="PAYMENT",
+                status=status_code,
+                request_raw=request_text,
+                response_raw=response_text,
+                account_number=db_customer_account.account_number,
+                cif_number=db_customer_account.cif_number,
+                transaction_type="PURCHASE"
+            ))
+
+        else:
+            db.rollback()
+            return { "message" : "invalid merchant code." }
+
+        db.commit()
+
+    return {
+        'journal_number' : journal_number,
+        'customer_reference_id': customer_reference_id,
+        'timestamp' : datetime.now(),
+        'data' : response.json()
+    }
