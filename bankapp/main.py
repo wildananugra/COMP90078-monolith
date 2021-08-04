@@ -32,7 +32,6 @@ def get_db():
 
 tokens = ["admin"]
 async def validate_token(token: str = Depends(oauth2_scheme)):
-    print(base64.b64decode(token.encode('ascii')))
     if base64.b64decode(token.encode('ascii')).decode('ascii') not in tokens:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
