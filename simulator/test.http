@@ -1,14 +1,95 @@
 ###
-POST http://localhost:8090/sim/merchant-1
+POST http://localhost:8090/sim/creditcard
+Action: INQUIRY
+
+###
+POST http://localhost:8090/sim/creditcard
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/ecommerce
 Action: INQUIRY
 
 ### 
-GET http://localhost:8080/payment/7877789584
+POST http://localhost:8090/sim/ecommerce
+Action: PAYMENT
 
 ### 
-POST http://localhost:8080/payment/7877789584
-Content-Type: application/json
+POST http://localhost:8090/sim/education
+Action: INQUIRY
 
-{
-    "account" : "0115471119"
-}
+### 
+POST http://localhost:8090/sim/education
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/electrical
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/electrical
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/emoney
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/emoney
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/flight
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/flight
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/insurance
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/insurance
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/internetquota
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/internetquota
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/multifinance
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/multifinance
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/tax
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/tax
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/train
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/train
+Action: PAYMENT
+
+### 
+POST http://localhost:8090/sim/water
+Action: INQUIRY
+
+### 
+POST http://localhost:8090/sim/water
+Action: PAYMENT

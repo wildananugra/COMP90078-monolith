@@ -1,0 +1,13 @@
+{
+    "biller_code": "0026",
+    "univ_code": "3001",
+    "billing_number": "1234567890123456",
+    "univName": "UNIVERSITAS INDONESIA",
+    "studentId": "1220277890",
+    "studentName": "MUHAMMAD YUFIAN PUTRA PRATAMA",
+    "phoneNumber": "08111222333",
+    "bill_amount": "205000",
+    "payment_status": "PAID",
+    "transaction_id": "321657498",
+    "fee": "0"
+}

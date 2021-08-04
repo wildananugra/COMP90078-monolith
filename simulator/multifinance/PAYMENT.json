@@ -1,0 +1,20 @@
+{
+    "provider": "Adira Finance",
+    "biller_code": "1003",
+    "billing_id": "0754589745",
+    "total_bill": "2920000",
+    "installment_number": "10",
+    "due_date": "20121224?20121224",
+    "police_number": "",
+    "installment_amount": "2900000",
+    "fined_amount": "20000",
+    "total_installment": "2920000",
+    "amount": "2940000",
+    "admin_fee": "0",
+    "lang_code": "0",
+    "transaction_name": "FIF KRD MBL MTR",
+    "maxPayment": "2920000",
+    "minPayment": "2920000",
+    "billReffNum": "136677790105850011",
+    "status": "SUCCESS"
+}

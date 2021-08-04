@@ -1,0 +1,20 @@
+{
+    "data": {
+        "descriptino": "PLN",
+        "customer_id": "5311111",
+        "customer_name": "PEL POSTPAID 174193",
+        "bill_status": "1",
+        "PLN_reff_number": "XVW1V0XYWZY4Z456789AX3VWW23W1WY3",
+        "admin_fee": "3000",
+        "switcher_ref_num": "000911V00094459200456GN723503056",
+        "PLN_note": "Informasi Hubungi Call Center 789 etau Hub. PLN Terdekat:999",
+        "admin_fee_param": "3000"
+    },
+    "branch": {
+        "counter_code": "ARD259100019",
+        "name": "LALA",
+        "branch_code": "259",
+        "partner_code": "ARD",
+        "address": "002/003 GANDARIA SELATAN CILANDAK JAKARTA SELATAN DKI JAKARTA 15415"
+    }
+}

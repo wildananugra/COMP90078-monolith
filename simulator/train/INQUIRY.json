@@ -1,0 +1,16 @@
+{
+    "amount": "100000",
+    "billing_id": "0812457451",
+    "booking_code": "3XUQA7",
+    "train_name": "ARGO BIMA 12345",
+    "passenger_name": "ARI BHAKTI 1234567891234567891",
+    "station_from": "BDNG",
+    "station_to": "GMBR",
+    "total_passenger": "4",
+    "depature_date": "29-JUL-11",
+    "total_billing": "1000000",
+    "depature_time": "19.05",
+    "class": "EKSA-1",
+    "seat_no": "13A_13B_13C_13D",
+    "account_number": "115258134"
+}

@@ -30,7 +30,8 @@ def insert_to_db(db: Session(), account):
         account_number = account['account_number'],
         cif_number = account['cif_number'],
         customer_id = account['customer_id'],
-        id_number = account['id_number']
+        id_number = account['id_number'],
+        account_type = account['account_type']
         ) 
     db.add(db_account)
     db.commit()

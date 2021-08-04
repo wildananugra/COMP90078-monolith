@@ -13,6 +13,7 @@ class AccountModel(Base):
     id_number = Column(String, index=True)
     balance = Column(Integer, default=0)
     currency = Column(String, default="IDR")
+    account_type = Column(String, index=True)
     customer_id = Column(Integer, ForeignKey("customers.id"))
     is_active = Column(Boolean, default=True)
 

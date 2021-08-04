@@ -1,0 +1,17 @@
+{
+    "payment_type": "GOPAY",
+    "channel": "IBANK",
+    "mcp_id": "GOPAY_CUSTOMER",
+    "customer_name": "Krisnaldi",
+    "currency": "IDR",
+    "paid_amount": "30000",
+    "total_amount": "30000",
+    "transaction_date": "02/06/2017 10:59:37",
+    "fee": "0",
+    "account_number": "115258134",
+    "customer_number": "081264455422",
+    "journal": "318488",
+    "reference": "941496375329382",
+    "service_type": "Top Up GO-PAY Customer",
+    "status": "SUCCESS"
+}

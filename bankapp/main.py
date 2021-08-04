@@ -128,7 +128,9 @@ def create_accounts(
         ...,
         example = {
             "id_number" : "3175023005910005",
-            "account_number": "115471119"
+            "account_number": "115471119",
+            "email":"wildananugrah@gmail.com",
+            "account_type": "SAVING"
         }
     ),
     db: Session = Depends(get_db),

@@ -1,0 +1,13 @@
+{
+    "description": "TELKOMSEL_DATA",
+    "journal": "20180820160231151299",
+    "phone_number": "081339372389",
+    "package_code": "OTSD25",
+    "package_amount": "25000",
+    "package_description": "Telkomsel 25 Data",
+    "package_serial_num": "6111641000977535851",
+    "amount": "24875",
+    "fee": "500",
+    "total_amount": "25375",
+    "status": "SUCCESS"
+}

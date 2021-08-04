@@ -11,10 +11,7 @@ async def root(request: Request, action: Optional[str] = Header(None)):
     action = request.headers['Action']
     merchant_path = request.path_params['merchant_path']
 
-    if(merchant_path == "merchant-1"):
-        output = ""
-        with open(f"{merchant_path}/{action}.json",'r') as f:
-            output = f.read()
-        return json.loads(output)
-    else:
-        return { "message" : "error!" }
+    output = ""
+    with open(f"{merchant_path}/{action}.json",'r') as f:
+        output = f.read()
+    return json.loads(output)

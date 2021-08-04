@@ -7,6 +7,7 @@ class AccountSchema(BaseModel):
     cif_number: str = None
     balance: int = None
     currency: str = None
+    account_type: str
     class Config:
         orm_mode = True
         schema_extra = {
@@ -15,6 +16,7 @@ class AccountSchema(BaseModel):
                 "account_number": "0115471119",
                 "balance": 1000,
                 "cif_number": "9001230101",
+                "account_type" : "SAVING", 
                 "currency": "IDR"
             }
         }
