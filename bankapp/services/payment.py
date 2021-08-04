@@ -269,5 +269,5 @@ async def pay(db: Session, request: Request):
         'journal_number' : journal_number,
         'customer_reference_id': customer_reference_id,
         'timestamp' : datetime.now(),
-        'data' : response.json()
+        'response_host' : response.json()
     }

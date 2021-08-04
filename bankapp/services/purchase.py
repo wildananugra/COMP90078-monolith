@@ -247,7 +247,6 @@ async def pay(db: Session, request: Request):
         elif merchant_code == "8357614070":
             response = water(db, request, "PAYMENT")
             db = insert_to_db_pay(db, db_customer_account, customer_reference_id, response, request_body, merchant_code)
-
         else:
             response = { "message" : "invalid merchant code." }
 

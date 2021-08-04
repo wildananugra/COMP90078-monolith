@@ -18,3 +18,4 @@ class AccountModel(Base):
     is_active = Column(Boolean, default=True)
 
     customers = relationship("CustomerModel", back_populates="accounts")
+    cards = relationship("CardModel", back_populates="accounts")

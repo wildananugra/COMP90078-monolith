@@ -11,7 +11,9 @@ from schemas.withdrawal import *
 from schemas.merchant import *
 from schemas.customer_service import *
 from schemas.channel_user import *
-from services import customer, account, transactions, merchant, payment, purchase, customer_service, channel_user
+from schemas.card import *
+from schemas.parameter import *
+from services import customer, account, transactions, merchant, payment, purchase, customer_service, channel_user, card, parameter
 from models.customer import CustomerModel, Base
 
 import base64
@@ -270,11 +272,33 @@ def withdrawal(
     tags=["Transactions"]
 )
 def transfer(
-    transfer: TransferSchema,
+    transfer_req: TransferSchema,
     db: Session = Depends(get_db),
     token: str = Depends(validate_token)
 ):
-    return transactions.transfer(db, transfer)
+    return transactions.transfer(db, transfer_req)
+
+@app.post(
+    "/interbank/inquiry/",
+    tags=["Transactions"]
+)
+def interbank_inquiry(
+    interbank_inq: InterbankInquirySchema,
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return transactions.interbank_inquiry(db, interbank_inq)
+
+@app.post(
+    "/interbank/transfer/",
+    tags=["Transactions"]
+)
+def interbank_transfer(
+    interbank_trf: InterbankTransferSchema,
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return transactions.interbank_transfer(db, interbank_trf)
 
 @app.get(
     "/historical_transaction/{account_number}",
@@ -572,3 +596,127 @@ async def delete_customer_services(
     token: str = Depends(validate_token)
 ):
     return channel_user.delete(db, user_id, "MBANK")
+
+# card management
+@app.get(
+    "/cards/{cif_number}",
+    tags=["CardManagement"]
+)
+def list_card(
+    cif_number: str, 
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return card.all(db, cif_number)
+
+@app.get(
+    "/card/{card_number}",
+    tags=["CardManagement"]
+)
+def detail_card(
+    card_number: str, 
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return card.detail(db, card_number)
+
+@app.post(
+    "/card/",
+    tags=["CardManagement"]
+)
+def create_card(
+    card_req: CardSchema,
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return card.create(db, card_req)
+
+@app.put(
+    "/card/{card_number}",
+    tags=["CardManagement"]
+)
+def update_card(
+    card_number: str, 
+    card_req: CardUpdateSchema, 
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return card.update(db, card_req, card_number)
+
+@app.put(
+    "/card/{card_number}/unlink",
+    tags=["CardManagement"]
+)
+def update_unlink_card(
+    card_number: str,
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return card.unlink(db, card_number)
+
+@app.delete(
+    "/card/{card_number}",
+    tags=["CardManagement"]
+)
+def delete_card(
+    card_number: str,
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return card.delete(db, card_number)
+
+# parameter
+@app.get(
+    "/parameter/",
+    tags=["Parameter"]
+)
+def list_parameter(
+    db: Session = Depends(get_db), 
+    skip: int = 0, limit: int = 100,
+    token: str = Depends(validate_token)
+):
+    return parameter.all(db, skip, limit)
+
+@app.get(
+    "/parameter/type/",
+    tags=["Parameter"]
+)
+def list_type_parameter(
+    parameter_type: str, 
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return parameter.by_type(db, parameter_type)
+
+@app.get(
+    "/parameter/key/",
+    tags=["Parameter"]
+)
+def list_key_parameter(
+    parameter_type: str, key: str, 
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return parameter.by_key(db, parameter_type, key)
+
+@app.post(
+    "/parameter/",
+    tags=["Parameter"]
+)
+def create_parameter(
+    parameter_req: ParameterSchema, 
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return parameter.create(db, parameter_req)
+
+@app.delete(
+    "/parameter/",
+    tags=["Parameter"]
+)
+def delete_parameter(
+    parameter_type: str, key: str, 
+    db: Session = Depends(get_db),
+    token: str = Depends(validate_token)
+):
+    return parameter.delete(db, parameter_type, key)
