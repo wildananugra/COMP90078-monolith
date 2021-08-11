@@ -41,7 +41,9 @@ def by_key(db: Session, parameter_type: str, key: str):
         raise HTTPException(status_code=404, detail="Type and key not found")
 
 def all(db: Session, skip: int = 0, limit: int = 0):
-    return db.query(ParameterModel).offset(skip).limit(limit).all()
+    db_parameter = db.query(ParameterModel).offset(skip).limit(limit).all()
+    db.close()
+    return db_parameter
 
 def delete(db: Session, parameter_type: str, key: str):
     db_parameter = select_by_type_key(db, parameter_type, key)

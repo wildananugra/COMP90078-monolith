@@ -102,3 +102,5 @@ accounts: 7473300375
 
 wildan: 0640991803
 accounts: 1154711191
+
+youtube-dl -i -f mp4 --yes-playlist 'https://www.youtube.com/watch?v=LcJi3WCR_T8&list=PL-CtdCApEFH8XrWyQAyRd6d_CKwxD8Ime'
